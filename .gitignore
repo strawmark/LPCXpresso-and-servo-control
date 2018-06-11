@@ -1,0 +1,6 @@
+/Debug/
+/.settings/
+/.vscode/
+*.launch
+*.cproject
+*.project
