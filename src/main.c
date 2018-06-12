@@ -154,16 +154,6 @@ void Servo_Reset ()
     ticks = 0;
 }
 
-double __abs(double n)
-{
-    /* Return the absolute value of n */
-
-    if (n < 0)
-        return -n;
-    else
-        return n;
-}
-
 void SysTick_Handler(void)
 {
     ++ticks; // Used for time tracking
@@ -191,21 +181,18 @@ int main(void)
     LSM6DSL_Gyro_Calibration();
 
     while (1){
-        while (ticks >= 1){                                                     // First measurement or pitch is 0, execute very 20 ms 
+        while (ticks >= 1){                                                     // First measurement or pitch is 0, execute at least every 20 ms
             LSM6DSL_Read_G_I2CM();                                              // Check sensors and compute pitch
             LSM6DSL_Read_XL_I2CM();
             pitch_f     = Pitch_KalmanFilter(ticks, TICKRATE_HZ, acc, gyro);
-            dutycycle   = Angle_To_DutyCycle(90-pitch_f);                       // First duty correction (nothing happens if pitch_f = 0)
+            dutycycle   = Angle_To_DutyCycle(90+pitch_f);                       // First duty correction (nothing happens if pitch_f = 0)
             ticks       = 0;
 
-            while (pitch_f != 0 && ticks >= 1) {                                // Correction cycle
-                state = dutycycle;
-                if (pitch_f > 4.0)
-                    dutycycle-=(0.006);
+            while (pitch_f != 0) {                                              // Correction cycle
+                if (pitch_f > 4.0)                                              // If it's inside the tolerance range, do nothing
+                    dutycycle+=(0.005);
                 if (pitch_f < -4.0)
-                    dutycycle += (0.006);
-                if (__abs(pitch_f) <= 4.0)                                      // Inside the tolerance range, do nothing
-                    dutycycle = state;
+                    dutycycle -= (0.005);
 
                 LSM6DSL_Read_G_I2CM();                                          // Check sensors and compute pitch
                 LSM6DSL_Read_XL_I2CM();
