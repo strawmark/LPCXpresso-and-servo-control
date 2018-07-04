@@ -158,7 +158,6 @@ void SysTick_Handler(void)
 {
     ++ticks; // Used for time tracking
     Chip_SCTPWM_SetDutyCycle(SCT_PWM, 1, Chip_SCTPWM_PercentageToTicks_Float(SCT_PWM,dutycycle));
-    //Display_Readings();    // lowers performance
 }
 
 int main(void)
@@ -186,6 +185,7 @@ int main(void)
             LSM6DSL_Read_XL_I2CM();
             pitch_f     = Pitch_KalmanFilter(ticks, TICKRATE_HZ, acc, gyro);
             dutycycle   = Angle_To_DutyCycle(90+pitch_f);                       // First duty correction (nothing happens if pitch_f = 0)
+            Display_Readings();                                                 // Warning - lowers performance
             ticks       = 0;
 
             while (pitch_f != 0) {                                              // Correction cycle
@@ -197,6 +197,7 @@ int main(void)
                 LSM6DSL_Read_G_I2CM();                                          // Check sensors and compute pitch
                 LSM6DSL_Read_XL_I2CM();
                 pitch_f = Pitch_KalmanFilter(ticks, TICKRATE_HZ, acc, gyro);
+                Display_Readings();                                             // Warning - lowers performance
                 ticks = 0;
             }
         }
