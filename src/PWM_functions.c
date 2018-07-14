@@ -19,7 +19,7 @@ double Chip_SCTPWM_PercentageToTicks_Float(LPC_SCT_T *pSCT, double percent)
     return (Chip_SCTPWM_GetTicksPerCycle(pSCT) * percent) / 100;
 }
 
-/* Operations */
+/* Conversion from an angle between 0 and 180 degrees to a duty cycle between MIN_DUTY_CYCLE and MAX_DUTY_CYCLE */
 
 double Angle_To_DutyCycle(double angle)
 {

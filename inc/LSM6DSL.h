@@ -3,15 +3,40 @@
 
 #include "I2C_functions.h"
 
+/* Setup */
+#define ACC_ODR        (104.0)          /* [Hz] 0; 12.5; 26; 52; 104; 208; 416; 833; 1660; 3330; 6660 */
+#define ACC_FS         (2)              /* [g] 2; 4; 8; 16; */
+
+#define ACC_OFS_X      (5)              /* Board specific values for the user offset registers */
+#define ACC_OFS_Y      (15)
+#define ACC_OFS_Z      (18)
+
+#define GYRO_ODR       (104.0)          /* [Hz] 0; 12.5; 26; 52; 104; 208; 416; 833; 1660; 3330; 6660 */
+#define GYRO_FS        (250)            /* [dps] 125; 250; 500; 1000; 2000 */
+
+/* LSM6DSL Scale factors */
+#define LSM6DSL_ACC_SENSITIVITY_FS_2G       0.061   // Sensitivity values for the accelerometer [mg/LSB]
+#define LSM6DSL_ACC_SENSITIVITY_FS_4G       0.122
+#define LSM6DSL_ACC_SENSITIVITY_FS_8G       0.244
+#define LSM6DSL_ACC_SENSITIVITY_FS_16G      0.488
+
+#define LSM6DSL_GYRO_SENSITIVITY_FS_125DPS  04.375  // Sensitivity values for the gyroscope [mdps/LSB]
+#define LSM6DSL_GYRO_SENSITIVITY_FS_250DPS  08.750
+#define LSM6DSL_GYRO_SENSITIVITY_FS_500DPS  17.500
+#define LSM6DSL_GYRO_SENSITIVITY_FS_1000DPS 35.000
+#define LSM6DSL_GYRO_SENSITIVITY_FS_2000DPS 70.000
+
 /* Functions */
 
-/* LSM6DSL_functions.c */
 void   LSM6DSL_Boot (void);
 void   LSM6DSL_Reset (void);
 void   LSM6DSL_Calibration_Acc(int ofs_x,int ofs_y,int ofs_z);
+void   LSM6DSL_Calibration_Gyro(int16_t *offsets);
 void   LSM6DSL_Setup_Acc (float new_odr, uint16_t new_fs);
 void   LSM6DSL_Setup_Gyro (float new_odr, uint16_t new_fs);
-void   LSM6DSL_Setup_I2CM (float acc_odr, uint16_t acc_fullscale, float gyro_odr, uint16_t gyro_fullscale);
+void   LSM6DSL_Setup_I2CM (double*, double*);
+void   LSM6DSL_Read_G_I2CM(double *gyro_data, int16_t *offsets, double *gyro_scale);
+void   LSM6DSL_Read_XL_I2CM(double *acc_data, double *acc_scale);
 double LSM6DSL_Get_Sensitivity_Gyro(int fs);
 double LSM6DSL_Get_Sensitivity_Acc(int fs);
 

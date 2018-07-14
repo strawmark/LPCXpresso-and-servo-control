@@ -11,7 +11,7 @@
 #define MAX_DUTY_CYCLE  (11.25)                           /* Using Parallax Standard Servo */
 #define MIN_DUTY_CYCLE  (3.75)
 
-void App_Setup_Pin(void); 														// Setup board specific pin muxing
+void App_Setup_Pin(void);                                                       // Setup board specific pin muxing
 double Chip_SCTPWM_PercentageToTicks_Float(LPC_SCT_T *pSCT, double percent);	// Percentage to ticks conversion, with float values
 double Angle_To_DutyCycle(double angle);										// Operations
 

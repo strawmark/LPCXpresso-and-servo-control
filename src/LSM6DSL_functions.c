@@ -1,28 +1,47 @@
 #include "LSM6DSL.h"
 
-#define LSM6DSL_ACC_SENSITIVITY_FS_2G       0.061   // Sensitivity values for the accelerometer [mg/LSB]
-#define LSM6DSL_ACC_SENSITIVITY_FS_4G       0.122
-#define LSM6DSL_ACC_SENSITIVITY_FS_8G       0.244
-#define LSM6DSL_ACC_SENSITIVITY_FS_16G      0.488
+/* Read from the LSM6DSL gyroscope */
+void LSM6DSL_Read_G_I2CM(double *gyro_data, int16_t *offsets, double *gyro_scale)
+{    
+    int s = 0;
+    int16_t rawdata_g[3];
 
-#define LSM6DSL_GYRO_SENSITIVITY_FS_125DPS  04.375  // Sensitivity values for the gyroscope [mdps/LSB]
-#define LSM6DSL_GYRO_SENSITIVITY_FS_250DPS  08.750
-#define LSM6DSL_GYRO_SENSITIVITY_FS_500DPS  17.500
-#define LSM6DSL_GYRO_SENSITIVITY_FS_1000DPS 35.000
-#define LSM6DSL_GYRO_SENSITIVITY_FS_2000DPS 70.000
+    Sensor_Get_Raw_Data(LSM6DSL_I2C_ADDR_7BIT, LSM6DSL_OUTX_L_G, rawdata_g);
 
-void LSM6DSL_Setup_I2CM (float acc_odr, uint16_t acc_fullscale, float gyro_odr, uint16_t gyro_fullscale)
+    for (s = 0;s < 3;s++){
+        rawdata_g[s]-=offsets[s];                       // Offset correction
+        gyro_data[s] = rawdata_g[s] * *gyro_scale;      // Introduce sensitivity [dps]
+    }
+}
+
+/* Read from the LSM6DSL accelerometer */
+void LSM6DSL_Read_XL_I2CM(double *acc_data, double *acc_scale)
+{	
+    int s = 0;
+    int16_t rawdata_xl[3];
+
+    Sensor_Get_Raw_Data(LSM6DSL_I2C_ADDR_7BIT, LSM6DSL_OUTX_L_XL, rawdata_xl);
+
+    for (s = 0;s < 3;s++){
+        acc_data[s] = rawdata_xl[s]* *acc_scale;    // Introduce sensitivity [g]
+    }
+}
+
+/* Setup for register writing, the inputs should be global variables */
+/* used to transform the raw data input to real data.                */
+void LSM6DSL_Setup_I2CM (double *gyro_scale, double *acc_scale)
 {
-    /* Setup for register writing */
-
-    LSM6DSL_Setup_Acc(acc_odr,acc_fullscale);
-    LSM6DSL_Setup_Gyro(gyro_odr,gyro_fullscale);
+    LSM6DSL_Setup_Acc(ACC_ODR,ACC_FS);
+    LSM6DSL_Setup_Gyro(GYRO_ODR,GYRO_FS);
     WriteRegister(LSM6DSL_I2C_ADDR_7BIT,LSM6DSL_CTRL3_C,
             LSM6DSL_CTRL3_C_BDU_ENABLE |                    // Enable Block data update
             LSM6DSL_CTRL3_C_IF_INC_ENABLE                   // Increment register address automatically during multiple byte access
             );
+    *gyro_scale = LSM6DSL_Get_Sensitivity_Gyro(GYRO_FS);
+    *acc_scale  = LSM6DSL_Get_Sensitivity_Acc(ACC_FS);
 }
 
+/* Returns the correct accelerometer scale factor correspondent to the selected fullscale */
 double LSM6DSL_Get_Sensitivity_Acc(int fs)
 {
     double sensitivity = 0;
@@ -43,6 +62,7 @@ double LSM6DSL_Get_Sensitivity_Acc(int fs)
     return sensitivity/1000; // mg->g
 }
 
+/* Returns the correct gyroscope scale factor correspondent to the selected fullscale */
 double LSM6DSL_Get_Sensitivity_Gyro(int fs)
 {
     double sensitivity = 0;
@@ -67,6 +87,7 @@ double LSM6DSL_Get_Sensitivity_Gyro(int fs)
     return sensitivity/1000; // mdps->dps
 }
 
+/* Writes the offset registers for the accelerometer */
 void LSM6DSL_Calibration_Acc(int ofs_x,int ofs_y,int ofs_z)
 {
     WriteRegister(LSM6DSL_I2C_ADDR_7BIT,LSM6DSL_CTRL6_C,LSM6DSL_CTRL6_C_USR_OFF_W_2e_10);    // Set offset weight 2^-10
@@ -78,6 +99,33 @@ void LSM6DSL_Calibration_Acc(int ofs_x,int ofs_y,int ofs_z)
     WriteRegister(LSM6DSL_I2C_ADDR_7BIT,LSM6DSL_Z_OFS_USR,ofs_z);
 }
 
+/* Assuming the gyro still when turned on, this function computes the zeroing values for the axes */
+void LSM6DSL_Calibration_Gyro(int16_t *offsets)
+{
+    int16_t calibration_vector[3][5] = {};
+    int16_t rawdata_calibration[3];
+    int i = 0;
+    int s = 0;
+
+    while (i < 5){
+        __WFI();
+        Sensor_Get_Raw_Data(LSM6DSL_I2C_ADDR_7BIT, LSM6DSL_OUTX_L_G, rawdata_calibration);
+        for (s = 0;s <= 2;s++){
+            calibration_vector[s][i] = rawdata_calibration[s];
+        }
+        i++;
+    }
+    for(s = 0;s < 5;s++){
+    	offsets[0] += calibration_vector[0][s];
+    	offsets[1] += calibration_vector[1][s];
+    	offsets[2] += calibration_vector[2][s];
+    }
+    offsets[0] /= 5;
+    offsets[1] /= 5;
+    offsets[2] /= 5;
+}
+
+/* Sets up the gyroscope to the chosen output and fullscale */
 void LSM6DSL_Setup_Gyro (float new_odr, uint16_t new_fs)
 {
     uint8_t status = 0 ;
@@ -153,6 +201,7 @@ void LSM6DSL_Setup_Gyro (float new_odr, uint16_t new_fs)
     WriteRegister(LSM6DSL_I2C_ADDR_7BIT,LSM6DSL_CTRL2_G,status);    // Write the new data to the register
 }
 
+/* Sets up the accelerometer to the chosen output and fullscale */
 void LSM6DSL_Setup_Acc (float new_odr, uint16_t new_fs)
 {
     uint8_t status = 0 ;
@@ -225,15 +274,16 @@ void LSM6DSL_Setup_Acc (float new_odr, uint16_t new_fs)
     WriteRegister(LSM6DSL_I2C_ADDR_7BIT,LSM6DSL_CTRL1_XL,status);    // Write the new data to the register
 }
 
+/* Reset the LSM6DSL sensor */
 void LSM6DSL_Reset (void)
-{
-    /* Reset the LSM6DSL sensor */
+{    
     WriteRegister(LSM6DSL_I2C_ADDR_7BIT,LSM6DSL_CTRL2_G,LSM6DSL_CTRL2_G_ODR_G_POWER_DOWN);  // CTRL2_G; Power-Down mode
     WriteRegister(LSM6DSL_I2C_ADDR_7BIT,LSM6DSL_CTRL6_C,LSM6DSL_CTRL6_C_XL_HM_MODE_ENABLE); // CTRL6_C; High Performance Mode
     WriteRegister(LSM6DSL_I2C_ADDR_7BIT,LSM6DSL_CTRL3_C,LSM6DSL_CTRL3_C_SW_RESET);          // CTRL_3_C, SW_RESET
     __WFI();                                                                                // Reset phase takes 50us, wait one Systick interrupt
 }
 
+/* Executes a boot sequence */
 void LSM6DSL_Boot (void)
 {
     WriteRegister(LSM6DSL_I2C_ADDR_7BIT,LSM6DSL_CTRL2_G,LSM6DSL_CTRL2_G_ODR_G_POWER_DOWN);  // Power-Down, 250 dps
