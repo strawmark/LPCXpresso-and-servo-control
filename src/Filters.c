@@ -1,10 +1,9 @@
 //  Implementation of two data fusion methods, based on Long Tran's work,
 //  "Data Fusion with 9 Degrees of Freedom Inertial Measurement Unit To Determine Object's Orientation"
 //  The documentation can be found at: http://digitalcommons.calpoly.edu/cgi/viewcontent.cgi?article=1422&context=eesp
-#ifndef __FILTERS_H__
-#define __FILTERS_H__
 
-#include "LSM6DSL_functions.h"
+#include "Filters.h"
+
 #define PI  (3.14159265359)
 
 double Pitch_ComplementaryFilter(int elapsed_ticks, int tickrate, double *acc, double *gyro)
@@ -70,4 +69,3 @@ double Pitch_KalmanFilter (int elapsed_ticks, int tickrate, double *acc, double 
 
     return pitch_angle;
 }
-#endif

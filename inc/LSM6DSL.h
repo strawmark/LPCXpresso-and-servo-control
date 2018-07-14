@@ -1,6 +1,20 @@
 #ifndef __LSM6DSL_H__
 #define __LSM6DSL_H__
 
+#include "I2C_functions.h"
+
+/* Functions */
+
+/* LSM6DSL_functions.c */
+void   LSM6DSL_Boot (void);
+void   LSM6DSL_Reset (void);
+void   LSM6DSL_Calibration_Acc(int ofs_x,int ofs_y,int ofs_z);
+void   LSM6DSL_Setup_Acc (float new_odr, uint16_t new_fs);
+void   LSM6DSL_Setup_Gyro (float new_odr, uint16_t new_fs);
+void   LSM6DSL_Setup_I2CM (float acc_odr, uint16_t acc_fullscale, float gyro_odr, uint16_t gyro_fullscale);
+double LSM6DSL_Get_Sensitivity_Gyro(int fs);
+double LSM6DSL_Get_Sensitivity_Acc(int fs);
+
 /* Registers */
 
 #define LSM6DSL_I2C_ADDR_7BIT                           (0x6B) // 7-bit I2C address of LSM6DSL

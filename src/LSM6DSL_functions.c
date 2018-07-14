@@ -1,17 +1,4 @@
-#ifndef __LSM6DSL_FUNCTIONS_H__
-#define __LSM6DSL_FUNCTIONS_H__
-
-#include "I2C_functions.h"
 #include "LSM6DSL.h"
-
-void   LSM6DSL_Boot (void);
-void   LSM6DSL_Reset (void);
-void   LSM6DSL_Calibration_Acc(int ofs_x,int ofs_y,int ofs_z);
-void   LSM6DSL_Setup_Acc (float new_odr, uint16_t new_fs);
-void   LSM6DSL_Setup_Gyro (float new_odr, uint16_t new_fs);
-void   LSM6DSL_Setup_I2CM (float acc_odr, uint16_t acc_fullscale, float gyro_odr, uint16_t gyro_fullscale);
-double LSM6DSL_Get_Sensitivity_Gyro(int fs);
-double LSM6DSL_Get_Sensitivity_Acc(int fs);
 
 #define LSM6DSL_ACC_SENSITIVITY_FS_2G       0.061   // Sensitivity values for the accelerometer [mg/LSB]
 #define LSM6DSL_ACC_SENSITIVITY_FS_4G       0.122
@@ -258,4 +245,3 @@ void LSM6DSL_Boot (void)
         __WFI();
     }
 }
-#endif

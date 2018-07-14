@@ -1,7 +1,4 @@
-#include <math.h>
-#include "board.h"
 #include "LSM6DSL.h"
-#include "LSM6DSL_functions.h"
 #include "PWM_functions.h"
 #include "Filters.h"
 
@@ -36,7 +33,7 @@ double yaw          = 0;
 double dutycycle    = 7.5;
 double state        = 0;
 
-static void LSM6DSL_Read_XL_I2CM()
+void LSM6DSL_Read_XL_I2CM()
 {
     int s = 0;
     int16_t rawdata_xl[3];
@@ -50,7 +47,7 @@ static void LSM6DSL_Read_XL_I2CM()
     }
 }
 
-static void LSM6DSL_Read_G_I2CM()
+void LSM6DSL_Read_G_I2CM()
 {
     int s = 0;
     int16_t rawdata_g[3];
@@ -68,7 +65,7 @@ static void LSM6DSL_Read_G_I2CM()
 void LSM6DSL_Gyro_Calibration(void)
 {
     /* Assuming the gyro still when turned on, this function computes the zeroing values for the axes */
-    
+
     int16_t calibration_vector[3][5] = {};
     int16_t rawdata_calibration[3];
     int i = 0;
@@ -91,7 +88,6 @@ void LSM6DSL_Gyro_Calibration(void)
     ofs_gyro[1] /= 5;
     ofs_gyro[2] /= 5;
 }
-
 
 void Display_Readings()
 {
@@ -197,7 +193,7 @@ int main(void)
                 LSM6DSL_Read_G_I2CM();                                          // Check sensors and compute pitch
                 LSM6DSL_Read_XL_I2CM();
                 pitch_f = Pitch_KalmanFilter(ticks, TICKRATE_HZ, acc, gyro);
-                Display_Readings();                                             // Warning - lowers performance
+                //Display_Readings();                                             // Warning - lowers performance
                 ticks = 0;
             }
         }

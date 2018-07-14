@@ -1,14 +1,6 @@
-#ifndef __I2C_FUNCTIONS_H__
-#define __I2C_FUNCTIONS_H__
+#include "I2C_functions.h"
 
-#define I2C_CLK_DIVIDER         (40)        /* I2C clock is set to 1.8MHz */
-#define I2C_BITRATE             (100000)    /* 100KHz I2C bit-rate */
-#define I2C_MODE                (0)         /* Standard I2C mode */
-
-static I2CM_XFER_T  i2cmXferRec;            /* I2CM transfer record */
-
-
-static void Init_I2C_PinMux(void)
+void Init_I2C_PinMux(void)
 {
     /* Initializes pin muxing for I2C interface - note that SystemInit() may already setup your pin muxing at system startup */
 
@@ -19,7 +11,7 @@ static void Init_I2C_PinMux(void)
 }
 
 
-static void setupI2CMaster()
+void setupI2CMaster()
 {
     /* Setup I2C handle and parameters */
 
@@ -37,7 +29,7 @@ static void setupI2CMaster()
 }
 
 
-static void WaitForI2cXferComplete(I2CM_XFER_T *xferRecPtr)
+void WaitForI2cXferComplete(I2CM_XFER_T *xferRecPtr)
 {
     /* Function to wait for I2CM transfer completion */
     /* Test for still transferring data */
@@ -48,7 +40,7 @@ static void WaitForI2cXferComplete(I2CM_XFER_T *xferRecPtr)
 }
 
 
-static void SetupXferRecAndExecute(uint8_t devAddr,uint8_t *txBuffPtr,uint16_t txSize,uint8_t *rxBuffPtr,uint16_t rxSize)
+void SetupXferRecAndExecute(uint8_t devAddr,uint8_t *txBuffPtr,uint16_t txSize,uint8_t *rxBuffPtr,uint16_t rxSize)
 {
     /* Function to setup and execute I2C transfer request */
 
@@ -133,4 +125,3 @@ void I2C0_IRQHandler(void)
     /* Call I2CM ISR function with the I2C device and transfer receive */
     Chip_I2CM_XferHandler(LPC_I2C0, &i2cmXferRec);
 }
-#endif

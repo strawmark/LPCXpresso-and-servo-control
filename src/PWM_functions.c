@@ -1,13 +1,4 @@
-#ifndef __PWM_FUNCTIONS_H__
-#define __PWM_FUNCTIONS_H__
-
-#define SCT_PWM         LPC_SCT0                          /* Use SCT0 for PWM */
-#define SCT_PWM_PIN_OUT 1                                 /* COUT1 Generate square wave */
-#define SCT_PWM_OUT     1                                 /* Index of OUT PWM */
-#define SCT_PWM_RATE    50                                /* PWM frequency, 50 Hz for servo control */
-
-#define MAX_DUTY_CYCLE  (11.25)                           /* Using Parallax Standard Servo */
-#define MIN_DUTY_CYCLE  (3.75)
+#include "PWM_functions.h"
 
 /* Setup board specific pin muxing */
 
@@ -36,4 +27,3 @@ double Angle_To_DutyCycle(double angle)
     static double min_duty  = (double)(MIN_DUTY_CYCLE);
     return (angle/180) * x + min_duty;
 }
-#endif
